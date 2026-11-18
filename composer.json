@@ -1,0 +1,53 @@
+{
+    "name": "best-tempmail/best-tempmail",
+    "description": "Disposable email inboxes for automated tests. Create a throwaway address, wait for the email, and get the verification code or the link to click.",
+    "keywords": [
+        "email",
+        "email-testing",
+        "disposable-email",
+        "temporary-email",
+        "temp-mail",
+        "otp",
+        "email-verification",
+        "testing",
+        "qa",
+        "phpunit",
+        "laravel"
+    ],
+    "homepage": "https://best-tempmail.com/api",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "best-tempmail.com",
+            "homepage": "https://best-tempmail.com"
+        }
+    ],
+    "support": {
+        "docs": "https://best-tempmail.com/api",
+        "issues": "https://github.com/mbilalawan926-sys/best-tempmail-php/issues"
+    },
+    "require": {
+        "php": "^8.1",
+        "ext-curl": "*",
+        "ext-json": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "BestTempMail\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "BestTempMail\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "php tests/run.php"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

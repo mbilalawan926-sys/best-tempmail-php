@@ -1,0 +1,72 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  mocked:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # The oldest version composer.json claims to support, and current.
+        php: ["8.1", "8.3", "8.4"]
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: curl, json, mbstring
+          coverage: none
+
+      - name: syntax check every file
+        run: |
+          status=0
+          for file in $(find src tests -name '*.php'); do
+            php -l "$file" > /dev/null || status=1
+          done
+          exit $status
+
+      - name: validate composer.json
+        run: composer validate --strict --no-check-publish
+
+      # No install step, because the package has no dependencies and the test
+      # suite has none either.
+      - name: test
+        run: php tests/run.php
+
+  live:
+    name: live API
+    runs-on: ubuntu-latest
+    # A pull request from a fork cannot read repository secrets, so this job
+    # would skip and report success, which is the worst of both worlds. Run it
+    # on pushes to main and on demand only.
+    if: github.event_name != 'pull_request'
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: curl, json, mbstring
+          coverage: none
+
+      # Without this, a missing secret makes the live suite skip and the job go
+      # green, which is the same failure mode as a test that passes because no
+      # email ever arrived. Fail loudly instead.
+      - name: the secret must be present
+        env:
+          BTM_API_KEY: ${{ secrets.BEST_TEMPMAIL_KEY }}
+        run: |
+          if [ -z "$BTM_API_KEY" ]; then
+            echo "::error::BEST_TEMPMAIL_KEY is not set on this repository, so the live suite would silently skip. Add it under Settings, Secrets and variables, Actions."
+            exit 1
+          fi
+
+      - name: test against the real API
+        env:
+          BTM_API_KEY: ${{ secrets.BEST_TEMPMAIL_KEY }}
+        run: php tests/run.php
